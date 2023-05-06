@@ -1,3 +1,1 @@
-ADD R1, R8, R5
-SUB R1, R8, R5
-CMP R2, R3
+ADD R2, R5, R8

@@ -4,29 +4,34 @@ def assemble_instruction(instruction, opcode_dict):
     tokens = instruction.split()
     opcode = tokens[0]
     operands = [x.strip() for x in ''.join(tokens[1:]).split(',')]
-    
+
     binary_instruction = 0
-    
+
     if opcode in opcode_dict:
         binary_instruction |= (opcode_dict[opcode] << 20)
-        
+
         if len(operands) == 3:
             first_operand = int(operands[0][1:])
             second_operand = int(operands[1][1:])
             destination = int(operands[2][1:])
-            
+
             binary_instruction |= (first_operand << 16)
             binary_instruction |= (second_operand << 12)
             binary_instruction |= (destination << 8)
-        elif len(operands) == 2 and opcode == "MOV":
+        elif len(operands) == 2:
             first_operand = int(operands[0][1:])
-            immediate_value = int(operands[1])
-            
+            second_operand = int(operands[1][1:])
+
             binary_instruction |= (first_operand << 16)
-            binary_instruction |= (1 << 24)
-            binary_instruction |= (immediate_value & 0xFF)
-            
+            binary_instruction |= (second_operand << 12)
+
+            if opcode == "MOV":
+                binary_instruction |= (1 << 24)
+                immediate_value = int(operands[1])
+                binary_instruction |= (immediate_value & 0xFF)
+
     return binary_instruction
+
 
 def compile_assembly(assembly, opcode_dict):
     binary_instructions = []
