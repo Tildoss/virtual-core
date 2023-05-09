@@ -54,10 +54,8 @@ void execute(Instruction instruction) {
                 // Check for overflow
                 if(result < first_operand_value || result < second_operand_value) {
                     // Set carry flag
-                    printf("sah\n");
                     registers[15] |= 1;
                 } else {
-                    printf("zebi\n");
                     // Clear carry flag
                     registers[15] &= ~1;
                 }
@@ -65,9 +63,7 @@ void execute(Instruction instruction) {
                 break;
         case 4:  // ADC
             {
-                printf("oui %llu\n", registers[15]);
                 uint64_t carry = (registers[15] & 1);
-                printf("Carry : %llu\n", carry);
                 result = first_operand_value + second_operand_value + carry;
                 // If there is an overflow, the result will be less than the operand(s).
                 if(result < first_operand_value || (carry && result <= first_operand_value) || result < second_operand_value) {
