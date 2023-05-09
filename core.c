@@ -8,7 +8,7 @@
 
 uint32_t instructions[MAX_INSTRUCTIONS];
 uint32_t PC = 0;
-long int registers[16];
+uint64_t registers[16];
 
 typedef struct {
     uint32_t bcc;
@@ -35,10 +35,10 @@ Instruction decode(uint32_t binary_instruction) {
 }
 
 void execute(Instruction instruction) {
-    long int result = 0;
-    long int first_operand_value = registers[instruction.first_operand];
-    long int second_operand_value = instruction.immediate_flag ? instruction.immediate_value : registers[instruction.second_operand];
-    // printf("%u\n",instruction.first_operand );
+    uint64_t result = 0;
+    uint64_t first_operand_value = registers[instruction.first_operand];
+    uint64_t second_operand_value = instruction.immediate_flag ? instruction.immediate_value : registers[instruction.second_operand];
+
     switch (instruction.opcode) {
         case 0:  // AND
             result = first_operand_value & second_operand_value;
@@ -50,11 +50,19 @@ void execute(Instruction instruction) {
             result = first_operand_value ^ second_operand_value;
             break;
         case 3:  // ADD
-        // printf("first %u, second %u\n", first_operand_value, second_operand_value);
             result = first_operand_value + second_operand_value;
+            // Update carry flag (bit 0) in R15
+            registers[15] = (result > first_operand_value) ? (registers[15] | 1) : (registers[15] & ~1);
+            printf("oui R15 : %llu\n", registers[15]);
             break;
         case 4:  // ADC
-            result = first_operand_value + second_operand_value + (registers[15] & 1);
+            {
+                uint64_t carry = (registers[15] & 1);
+                printf("carry %llu\n", carry);
+                result = first_operand_value + second_operand_value + carry;
+                // Update carry flag (bit 0) in R15
+                // registers[15] = ((result < first_operand_value) || ((result == first_operand_value) && carry)) ? (registers[15] | 1) : (registers[15] & ~1);
+            }
             break;
         case 5:  // CMP
             result = first_operand_value - second_operand_value;
@@ -80,9 +88,10 @@ void execute(Instruction instruction) {
             return;
     }
 
-    // printf("register %u result %ld\n", instruction.destination, result);
     registers[instruction.destination] = result;
 }
+
+
 
 
 uint32_t swap_endianness(uint32_t value) {
@@ -133,7 +142,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < 16; i++) {
         char register_name[3];
-        fscanf(register_state_file, "%2s=0x%X", register_name, &registers[i]);
+        fscanf(register_state_file, "%2s=0x%llX", register_name, &registers[i]);
     }
 
     fclose(register_state_file);
@@ -154,16 +163,21 @@ int main(int argc, char *argv[]) {
     // Decode and execute the instructions
     for (uint32_t i = 0; i < PC; i++) {
         Instruction decoded_instruction = decode(instructions[i]);
-    
+        if (verbose) {
+            for (int i = 0; i < 16; i++) {
+                printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
+            }
+        }
         execute(decoded_instruction);
+
     }
 
     // Print the final state of the registers if verbose mode is enabled
-    if (verbose) {
-        for (int i = 0; i < 16; i++) {
-            printf("R%u: %llu\n", i, registers[i]);
-        }
+if (verbose) {
+    for (int i = 0; i < 16; i++) {
+        printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
     }
+}
 
     return 0;
 }
