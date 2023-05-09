@@ -1,2 +1,2 @@
-ADD R5, R0, R2
-ADC R4, R1, R3
+ADD R4, R0, R2
+ADC R5, R1, R3

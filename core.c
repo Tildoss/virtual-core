@@ -52,7 +52,7 @@ void execute(Instruction instruction) {
         case 3:  // ADD
             result = first_operand_value + second_operand_value;
             // Update carry flag (bit 0) in R15
-            registers[15] = (result > first_operand_value) ? (registers[15] | 1) : (registers[15] & ~1);
+            registers[15] = (result < first_operand_value) ? (registers[15] | 1) : (registers[15] & ~1);
             printf("oui R15 : %llu\n", registers[15]);
             break;
         case 4:  // ADC
