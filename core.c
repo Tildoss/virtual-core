@@ -49,19 +49,34 @@ void execute(Instruction instruction) {
         case 2:  // EOR
             result = first_operand_value ^ second_operand_value;
             break;
-        case 3:  // ADD
-            result = first_operand_value + second_operand_value;
-            // Update carry flag (bit 0) in R15
-            registers[15] = (result < first_operand_value) ? (registers[15] | 1) : (registers[15] & ~1);
-            printf("oui R15 : %llu\n", registers[15]);
-            break;
+            case 3:  // ADD
+                result = first_operand_value + second_operand_value;
+                // Check for overflow
+                if(result < first_operand_value || result < second_operand_value) {
+                    // Set carry flag
+                    printf("sah\n");
+                    registers[15] |= 1;
+                } else {
+                    printf("zebi\n");
+                    // Clear carry flag
+                    registers[15] &= ~1;
+                }
+                // printf("Result : %llu + %llu = %llu\n", first_operand_value, second_operand_value, result);
+                break;
         case 4:  // ADC
             {
+                printf("oui %llu\n", registers[15]);
                 uint64_t carry = (registers[15] & 1);
-                printf("carry %llu\n", carry);
+                printf("Carry : %llu\n", carry);
                 result = first_operand_value + second_operand_value + carry;
-                // Update carry flag (bit 0) in R15
-                // registers[15] = ((result < first_operand_value) || ((result == first_operand_value) && carry)) ? (registers[15] | 1) : (registers[15] & ~1);
+                // If there is an overflow, the result will be less than the operand(s).
+                if(result < first_operand_value || (carry && result <= first_operand_value) || result < second_operand_value) {
+                    // Set carry flag
+                    registers[15] |= 1;
+                } else {
+                    // Clear carry flag
+                    registers[15] &= ~1;
+                }
             }
             break;
         case 5:  // CMP
@@ -168,6 +183,15 @@ int main(int argc, char *argv[]) {
                 printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
             }
         }
+        printf("-----\n");
+        // printf("Instruction %u:\n", i);
+        // printf("  BCC: 0x%01X\n", decoded_instruction.bcc);
+        // printf("  Immediate Flag: %d\n", decoded_instruction.immediate_flag);
+        // printf("  Opcode: 0x%01X\n", decoded_instruction.opcode);
+        // printf("  First Operand: R%u\n", decoded_instruction.first_operand);
+        // printf("  Second Operand: R%u\n", decoded_instruction.second_operand);
+        // printf("  Destination: R%u\n", decoded_instruction.destination);
+        // printf("  Immediate Value: 0x%02X\n", decoded_instruction.immediate_value);
         execute(decoded_instruction);
 
     }
