@@ -49,11 +49,6 @@ def assemble_instruction(instruction, opcode_dict):
             binary_instruction |= (immediate_value << 12)
             if binary_instruction & (1 << 24):  # Only set immediate value when immediate flag is 1
                 binary_instruction |= (immediate_value & 0xFF)  # Set immediate value
- 
-    # print("Bytes in binary_instruction:")
-    # for i in range(4):
-    #     byte = (binary_instruction >> (8 * (3 - i))) & 0xFF
-    #     print(f"Byte {i + 1}: {byte:08b} ({byte:#04x})")
 
     return binary_instruction
 

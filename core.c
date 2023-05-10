@@ -50,18 +50,17 @@ void execute(Instruction instruction) {
         case 2:  // EOR
             result = first_operand_value ^ second_operand_value;
             break;
-            case 3:  // ADD
-                result = first_operand_value + second_operand_value;
-                // Check for overflow
-                if(result < first_operand_value || result < second_operand_value) {
-                    // Set carry flag
-                    registers[15] |= 1;
-                } else {
-                    // Clear carry flag
-                    registers[15] &= ~1;
-                }
-                // printf("Result : %llu + %llu = %llu\n", first_operand_value, second_operand_value, result);
-                break;
+        case 3:  // ADD
+            result = first_operand_value + second_operand_value;
+            // Check for overflow
+            if(result < first_operand_value || result < second_operand_value) {
+                // Set carry flag
+                registers[15] |= 1;
+            } else {
+                // Clear carry flag
+                registers[15] &= ~1;
+            }
+            break;
         case 4:  // ADC
             {
                 uint64_t carry = (registers[15] & 1);
@@ -213,13 +212,10 @@ int main(int argc, char *argv[]) {
     }
 
     // Print the final state of the registers if verbose mode is enabled
-if (verbose) {
+
     printf("Final state of the registers :\n");
     for (int i = 0; i < 16; i++) {
         printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
     }
-    // printf("0x%" PRIx64 "%016" PRIx64 "\n", registers[3], registers[4]);
-}
-
     return 0;
 }
