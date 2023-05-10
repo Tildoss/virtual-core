@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #define MAX_INSTRUCTIONS 1024
 
@@ -81,9 +82,28 @@ void execute(Instruction instruction) {
             return;
         case 6:  // SUB
             result = first_operand_value - second_operand_value;
+            // Check for underflow
+            if (first_operand_value < second_operand_value) {
+                // Set carry flag
+                registers[15] |= 1;
+            } else {
+                // Clear carry flag
+                registers[15] &= ~1;
+            }
             break;
         case 7:  // SBC
-            result = first_operand_value - second_operand_value - ((registers[15] & 1) ^ 1);
+            {
+                uint64_t borrow = (registers[15] & 1);
+                result = first_operand_value - second_operand_value - borrow;
+                // If there is an underflow, the result will be more than the operand(s).
+                if (first_operand_value < result || (borrow && first_operand_value <= result)) {
+                    // Set carry flag
+                    registers[15] |= 1;
+                } else {
+                    // Clear carry flag
+                    registers[15] &= ~1;
+                }
+            }
             break;
         case 8:  // MOV
             result = second_operand_value;
@@ -178,8 +198,8 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < 16; i++) {
                 printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
             }
+            printf("-----\n");
         }
-        printf("-----\n");
         // printf("Instruction %u:\n", i);
         // printf("  BCC: 0x%01X\n", decoded_instruction.bcc);
         // printf("  Immediate Flag: %d\n", decoded_instruction.immediate_flag);
@@ -194,9 +214,11 @@ int main(int argc, char *argv[]) {
 
     // Print the final state of the registers if verbose mode is enabled
 if (verbose) {
+    printf("Final state of the registers :\n");
     for (int i = 0; i < 16; i++) {
         printf("R%u: %llu (0x%016llX)\n", i, registers[i], registers[i]);
     }
+    // printf("0x%" PRIx64 "%016" PRIx64 "\n", registers[3], registers[4]);
 }
 
     return 0;

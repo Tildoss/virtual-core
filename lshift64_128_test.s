@@ -1,0 +1,4 @@
+MOV R2, 64
+SUB R2, R2, R1
+RSH R3, R0, R2
+LSH R4, R0, R1
